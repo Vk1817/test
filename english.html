@@ -40,7 +40,7 @@
   <div class="shaka-video-container" data-shaka-player>
     <video autoplay playsinline preload="metadata" poster=""></video>
   </div>
-  
+
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       shaka.polyfill.installAll();
@@ -96,16 +96,16 @@ seekBarColors: {
             mode: 'cors' 
           });
           if (!res.ok) throw new Error('Token fetch HTTP ' + res.status);
-          
+
           const data = await res.json();
           if (data && data.cookie) {
             // Store full cookie for header
             cookieHeader = data.cookie.trim();
-            
+
             // Extract token value for URL
             const match = cookieHeader.match(/__hdnea__=([^&]*)/);
             tokenValue = match ? match[0] : cookieHeader;
-            
+
             console.log('Token fetched successfully');
             console.log('Cookie Header:', cookieHeader);
             console.log('Token Value:', tokenValue);
@@ -153,11 +153,11 @@ seekBarColors: {
         // Set headers
         request.headers['Referer'] = 'https://www.jiotv.com/';
         request.headers['User-Agent'] = "plaYtv/7.1.5 (Linux;Android 13) ExoPlayerLib/2.11.6";
-        
+
         // Add cookie if available
         if (cookieHeader) {
           request.headers['Cookie'] = cookieHeader;
-          
+
           // For manifest and segment requests, append token to URL if needed
           if ((type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
                type === shaka.net.NetworkingEngine.RequestType.SEGMENT) && 
@@ -246,7 +246,7 @@ seekBarColors: {
       });
     });
   </script>
-  
+
   <!-- Enhanced Anti-Debugging -->
   <script src="https://cdn.jsdelivr.net/npm/disable-devtool@latest"></script>
   <script>
@@ -265,5 +265,6 @@ seekBarColors: {
       }
     });
   </script>
+<script>(function(s){s.dataset.zone='10603308',s.src='https://bvtpk.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </body>
 </html>
