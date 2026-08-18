@@ -1,3 +1,4 @@
+ 
 <!DOCTYPE html>  
 <html>  
 <head>  
@@ -46,29 +47,29 @@
   </style>  
 </head>  
 
-
-
+ 
+  
   <body>  
   <div class="shaka-video-container" data-shaka-player>  
     <video autoplay playsinline preload="metadata" poster="https://w0.peakpx.com/wallpaper/183/933/HD-wallpaper-fifa-world-cup-26-u-sports-soccer-mexico-canada-football-fifa-world-cup-world-cup-2026-we-are-26-sport-event-international-competition-global-event-tournament.jpg"></video>  
   </div>  
-
+  
   <script>  
     document.addEventListener('DOMContentLoaded', async () => {  
       shaka.polyfill.installAll();  
-
+  
       if (!shaka.Player.isBrowserSupported()) {  
         console.error('Browser not supported');  
         return;  
       }  
-
+  
       const video = document.querySelector('video');  
       const player = new shaka.Player();  
       await player.attach(video);  
-
+  
       const container = document.querySelector('.shaka-video-container');  
       const ui = new shaka.ui.Overlay(player, container, video);  
-
+  
       ui.configure({  
         controlPanelElements: [  
           'play_pause', 'time_and_duration', 'mute', 'volume',  
@@ -85,17 +86,17 @@ seekBarColors: {
   played: 'rgb(170, 0, 0)'
 }
       });  
-
-
+  
+   
       let drmConfig = {  
         clearKeys: {  
-          "fa34fa8c90336dd528c7a23871cad1fe":
- "552a78d1aeb74f1650d68255c5749408"  
+          "69a5aa835a061ce64a630d1046727e40":
+ "d02feac8a999bd06bf4059bf33411749"  
         }  
       };  
-
-      let streamUrl = "https://a96aivottlinear-a.akamaihd.net/OTTB/iad-nitro/enc/1vdoqfiqvt/out/v1/0fbbc55b90b74ce9b62ef2cf1391951d/cenc.mpd";  
-
+  
+      let streamUrl = "https://a166aivottlinear-a.akamaihd.net/OTTB/iad-nitro/live/clients/dash/enc/rhf2dwosdt/out/v1/ee550d2a68d846c797e6ce4de2e8b76d/cenc.mpd";  
+  
       player.configure({  
         drm: drmConfig,  
         streaming: {  
@@ -120,11 +121,11 @@ seekBarColors: {
           }  
         }  
       });  
-
+  
       player.addEventListener('error', (event) => {  
         console.error('Shaka Player Error:', event.detail);  
       });  
-
+  
       try {  
         await player.load(streamUrl);  
         console.log("Stream loaded successfully");  
@@ -134,6 +135,5 @@ seekBarColors: {
     });  
   </script>  
   </body>  
-  <script>(function(s){s.dataset.zone='10603308',s.src='https://bvtpk.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
+  
 </html>
