@@ -448,7 +448,7 @@
 
 <div id="channel-list">
   <div class="header">
-    <h1>⚡ SPORTLINK</h1>
+    <h1>⚡ CRICKCAST</h1>
     <span class="subtitle">JioTV+</span>
     <span class="count" id="channelCount">0 channels</span>
   </div>
@@ -997,7 +997,7 @@ async function main(){
   var channels = data.channels || data;
   var ch=channels.find(function(c){ return c.id===id; });
   if(!ch){ errMsg("Channel not found."); return; }
-  document.title="SPORTLINK · "+ch.name;
+  document.title="CRICKCAST · "+ch.name;
   await startPlayer(ch);
 }
 
