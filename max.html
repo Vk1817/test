@@ -6,6 +6,9 @@
   <meta name="referrer" content="no-referrer">
   <title>CrickCast Live - Hindi</title>
 
+  <link rel="stylesheet"
+        href="https://cdn.plyr.io/3.7.8/plyr.css">
+
   <style>
     * {
       margin: 0;
@@ -13,11 +16,13 @@
       box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
       width: 100%;
       height: 100%;
       overflow: hidden;
       background: #000;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
 
     .player-wrapper {
@@ -25,35 +30,49 @@
       inset: 0;
       width: 100vw;
       height: 100vh;
+      background: #000;
       overflow: hidden;
+    }
+
+    #video {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      object-fit: contain;
+    }
+
+    .plyr {
+      width: 100%;
+      height: 100%;
       background: #000;
     }
 
-    .player-wrapper iframe {
-      display: block;
-      width: 100%;
+    .plyr__video-wrapper {
       height: 100%;
-      border: 0;
-      margin: 0;
-      padding: 0;
+      background: #000;
     }
 
+    /* CrickCast LIVE watermark */
     #watermark {
       position: fixed;
       top: 12px;
       left: 12px;
       z-index: 99999;
+
       padding: 7px 12px;
       border-radius: 999px;
+
       background: rgba(0, 0, 0, .55);
-      border: 1px solid rgba(0, 229, 255, .3);
+      border: 1px solid rgba(0, 229, 255, .30);
+
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
+
       color: #fff;
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       font-size: 15px;
       font-weight: 700;
       line-height: 1;
+
       pointer-events: none;
       user-select: none;
     }
@@ -62,7 +81,40 @@
       color: #00e5ff;
     }
 
+    /* Mobile sound button */
+    #soundPrompt {
+      position: fixed;
+      left: 50%;
+      bottom: 82px;
+      transform: translateX(-50%);
+      z-index: 100000;
+
+      display: none;
+
+      border: 1px solid rgba(0, 229, 255, .5);
+      border-radius: 999px;
+
+      padding: 12px 18px;
+
+      background: rgba(0, 0, 0, .78);
+      color: #fff;
+
+      font-size: 14px;
+      font-weight: 700;
+
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #soundPrompt b {
+      color: #00e5ff;
+    }
+
     @media (max-width: 700px) {
+      #soundPrompt {
+        display: block;
+      }
+
       #watermark {
         top: 10px;
         left: 10px;
@@ -74,19 +126,166 @@
 </head>
 
 <body>
+
   <div class="player-wrapper">
-    <iframe
-      src="https://matchdekho.in/fc-play?url=https%3A%2F%2Fin-mc-flive.fancode.com%2Fmumbai%2F4248491_hindi_hls_ed24a8186993836_1ta-di_h264%2F1080p.m3u8%3Fhdntl%3DExpires%3D1789392659~_GO%3DGenerated~acl%3D%2Fmumbai%2F4248491_hindi_hls_ed24a8186993836_1ta-di_h264%2F*~Signature%3DAWDec-HByQhk68qSCnCZyABpf45aQQnnay5WKHnruoErrGrN-vafHAIvAttH8kmxylYL3z2vHk2KCGSXRBizd32DMxwF%26title%3DIndia%2520Tour%2520of%2520Afghanistan%252C%25202026%2520%255BHindi%255D%26match_id%3D4248491"
-      sandbox="allow-scripts allow-same-origin"
-      referrerpolicy="no-referrer"
-      allow="encrypted-media; fullscreen"
-      allowfullscreen
-      title="Hindi Live Player">
-    </iframe>
+    <video
+      id="video"
+      playsinline
+      preload="metadata"
+      muted>
+    </video>
   </div>
 
   <div id="watermark">
     Crickcast <b>LIVE</b>
   </div>
+
+  <button id="soundPrompt" type="button">
+    🔊 <b>UNMUTE</b> — Tap for sound
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+      const video = document.getElementById('video');
+      const soundPrompt = document.getElementById('soundPrompt');
+
+      const streamUrl =
+        'https://ingest4-9869.boxcast.com/satisfying-year/dhii6vrqpq5jdgsbz3cy/1080p-byteranges-ext.m3u8?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly9pbmdlc3Q0LTk4NjkuYm94Y2FzdC5jb20vc2F0aXNmeWluZy15ZWFyL2RoaWk2dnJxcHE1amRnc2J6M2N5LzEwODBwLWJ5dGVyYW5nZXMtZXh0Lm0zdTgiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3ODk0MTYwNTd9fX1dfQ&Signature=qXFLEwc8QLm6LZD6Ezj1yPuxKTRMX6CO0JHLSmB9N3XMon~FhV4gnEm2es741WirywgDzZ-W2OL6mdosWi1gkGEUDaN9DPmik6VrNGf31gcMirQPtq5fDOJ-~-Oq0PxEezc97NvdE4myKkULsb7Ic3OKZxLXUq1tpcp8CUMeANssqSyeYbAiVNKI8qtSGlFAd24Upj88w-wTnLy~~EaTCD7g2DCgKQjuUGVhkfBOeiThuRPWT1I0jL3qTTEdxNwkuPlLlKE34FrfV6-JAlcmyi6irz1~NogdLDu6IsVX1O8ypDdB3RWi7Y-~rTv89FgLoJl8eqFpN0DNifWsCQVkzw&Key-Pair-Id=APKAJ7GUCBQUK6NTWZCA';
+
+      /*
+       * Start muted so mobile browsers allow autoplay.
+       */
+      video.muted = true;
+
+      /*
+       * Initialize Plyr controls.
+       */
+      const player = new Plyr(video, {
+        controls: [
+          'play-large',
+          'play',
+          'progress',
+          'current-time',
+          'duration',
+          'mute',
+          'volume',
+          'settings',
+          'fullscreen'
+        ],
+        autoplay: true,
+        fullscreen: {
+          enabled: true,
+          fallback: true
+        },
+        storage: {
+          enabled: false
+        }
+      });
+
+      /*
+       * HLS.js for Chrome / Edge / Firefox.
+       */
+      if (window.Hls && Hls.isSupported()) {
+
+        const hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 30,
+          maxBufferLength: 30,
+          maxMaxBufferLength: 60
+        });
+
+        hls.loadSource(streamUrl);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play().catch(function (error) {
+            console.warn('Autoplay blocked:', error);
+          });
+        });
+
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          console.error('HLS error:', data);
+
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                console.warn('Network error. Retrying...');
+                hls.startLoad();
+                break;
+
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                console.warn('Media error. Recovering...');
+                hls.recoverMediaError();
+                break;
+
+              default:
+                console.error('Fatal HLS error.');
+                break;
+            }
+          }
+        });
+
+        window.hls = hls;
+
+      }
+
+      /*
+       * Safari / native HLS.
+       * This is the exact source style requested.
+       */
+      else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+
+        video.src = streamUrl;
+
+        video.addEventListener('loadedmetadata', function () {
+
+          video.play().catch(function (e) {
+            console.warn('Autoplay blocked:', e);
+          });
+
+        }, { once: true });
+
+      }
+
+      else {
+        console.error('HLS is not supported by this browser.');
+      }
+
+      /*
+       * Mobile sound prompt.
+       *
+       * The button directly unmutes the video because this version
+       * plays the supplied source directly instead of using an iframe.
+       */
+      soundPrompt.addEventListener('click', function () {
+
+        video.muted = false;
+        video.volume = 1;
+
+        video.play().then(function () {
+          soundPrompt.style.display = 'none';
+        }).catch(function (error) {
+          console.warn('Unable to start audio:', error);
+        });
+
+      });
+
+      /*
+       * Also hide the prompt if the player becomes unmuted.
+       */
+      video.addEventListener('volumechange', function () {
+        if (!video.muted && video.volume > 0) {
+          soundPrompt.style.display = 'none';
+        }
+      });
+
+    });
+  </script>
+
 </body>
 </html>
