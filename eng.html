@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+
+<title>Crickcast Live</title>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.16"></script>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+html,body{
+  width:100%;
+  height:100%;
+  background:#000;
+  overflow:hidden;
+  font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+
+#player-container{
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+video{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#000;
+}
+
+/* =====================================================
+   CRICKCAST WATERMARK
+   ===================================================== */
+
+#watermark{
+  position:fixed;
+  top:12px;
+  left:12px;
+  z-index:9999;
+
+  padding:7px 12px;
+
+  border-radius:999px;
+
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(0,229,255,.3);
+
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+
+  font-weight:700;
+  color:#fff;
+
+  pointer-events:none;
+  user-select:none;
+}
+
+#watermark b{
+  color:#00e5ff;
+}
+
+/* =====================================================
+   STATUS
+   ===================================================== */
+
+#status{
+  position:fixed;
+  top:max(16px,env(safe-area-inset-top));
+  right:16px;
+
+  z-index:9997;
+
+  display:flex;
+  align-items:center;
+  gap:7px;
+
+  padding:6px 15px 6px 11px;
+
+  background:rgba(10,10,10,.88);
+  border:1px solid rgba(255,255,255,.07);
+
+  font-size:11.5px;
+  font-weight:500;
+  letter-spacing:.2px;
+
+  border-radius:24px;
+
+  pointer-events:none;
+
+  opacity:0;
+
+  transition:
+    opacity .25s ease,
+    transform .25s ease;
+
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+
+  white-space:nowrap;
+
+  box-shadow:
+    0 2px 14px rgba(0,0,0,.45);
+
+  color:#c0c0c0;
+}
+
+#status.show{
+  opacity:1;
+}
+
+.st-dot{
+  width:7px;
+  height:7px;
+
+  border-radius:50%;
+
+  flex-shrink:0;
+
+  display:inline-block;
+
+  background:#60a5fa;
+}
+
+#status.live .st-dot{
+  background:#22d3a0;
+  animation:dot-pulse 2s ease-in-out infinite;
+}
+
+#status.warn .st-dot{
+  background:#fb923c;
+  animation:dot-pulse 1s ease-in-out infinite;
+}
+
+#status.err .st-dot{
+  background:#f87171;
+}
+
+@keyframes dot-pulse{
+  0%,100%{
+    opacity:1;
+    transform:scale(1);
+  }
+
+  50%{
+    opacity:.35;
+    transform:scale(.55);
+  }
+}
+
+/* =====================================================
+   CUSTOM CONTROLS
+   ===================================================== */
+
+#controls{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+
+  z-index:9998;
+
+  padding:
+    20px
+    18px
+    max(14px,env(safe-area-inset-bottom));
+
+  background:
+    linear-gradient(
+      transparent,
+      rgba(0,0,0,.82)
+    );
+
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  opacity:0;
+  transition:opacity .25s ease;
+}
+
+#player-container:hover #controls,
+#controls.visible{
+  opacity:1;
+}
+
+.control-btn{
+  width:38px;
+  height:38px;
+
+  border:none;
+  border-radius:50%;
+
+  background:rgba(0,0,0,.65);
+
+  color:#fff;
+
+  cursor:pointer;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size:17px;
+
+  transition:
+    background .2s ease,
+    transform .15s ease;
+}
+
+.control-btn:hover{
+  background:rgba(0,229,255,.2);
+  transform:scale(1.05);
+}
+
+#progress{
+  flex:1;
+  height:4px;
+  cursor:pointer;
+  accent-color:#00e5ff;
+}
+
+/* =====================================================
+   QUALITY MENU
+   ===================================================== */
+
+#qualityMenu{
+  position:absolute;
+  right:18px;
+  bottom:65px;
+
+  min-width:130px;
+
+  padding:7px;
+
+  background:rgba(15,15,15,.96);
+
+  border:
+    1px solid
+    rgba(255,255,255,.1);
+
+  border-radius:10px;
+
+  display:none;
+
+  box-shadow:
+    0 10px 30px
+    rgba(0,0,0,.5);
+}
+
+#qualityMenu.show{
+  display:block;
+}
+
+.quality-option{
+  width:100%;
+
+  border:none;
+
+  background:transparent;
+
+  color:#ddd;
+
+  padding:9px 10px;
+
+  text-align:left;
+
+  border-radius:6px;
+
+  cursor:pointer;
+}
+
+.quality-option:hover{
+  background:rgba(255,255,255,.1);
+}
+
+.quality-option.active{
+  color:#00e5ff;
+}
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media(max-width:600px){
+
+  #watermark{
+    top:10px;
+    left:10px;
+
+    padding:6px 10px;
+
+    font-size:13px;
+  }
+
+  #status{
+    right:10px;
+  }
+
+  #controls{
+    padding-left:10px;
+    padding-right:10px;
+  }
+
+  .control-btn{
+    width:35px;
+    height:35px;
+  }
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="player-container">
+
+<video
+ id="video"
+ playsinline
+ webkit-playsinline
+ preload="metadata"> </video>
+
+  <div id="controls">
+
+```
+<button
+  class="control-btn"
+  id="playBtn"
+  title="Play/Pause">
+  ▶
+</button>
+
+<button
+  class="control-btn"
+  id="muteBtn"
+  title="Mute">
+  🔊
+</button>
+
+<input
+  id="progress"
+  type="range"
+  min="0"
+  max="100"
+  value="0"
+  step="0.1">
+
+<button
+  class="control-btn"
+  id="qualityBtn"
+  title="Quality">
+  ⚙
+</button>
+
+<button
+  class="control-btn"
+  id="fullscreenBtn"
+  title="Fullscreen">
+  ⛶
+</button>
+
+<div id="qualityMenu"></div>
+```
+
+  </div>
+
+</div>
+
+<!-- CRICKCAST WATERMARK -->
+
+<div id="watermark">
+  Crickcast <b>LIVE</b>
+</div>
+
+<!-- STATUS -->
+
+<div id="status">
+  <span class="st-dot"></span>
+  <span id="statusText">Live</span>
+</div>
+
+<script>
+(function(){
+
+  "use strict";
+
+
+  /* =====================================================
+     STREAM URL
+     ===================================================== */
+
+  const STREAM_URL =
+    "https://in-mc-flive.fancode.com/mumbai/4248491_english_hls_708908f4d035358_1ta-di_h264/1080p.m3u8?hdntl=Expires=1789392659~_GO=Generated~acl=/mumbai/4248491_english_hls_708908f4d035358_1ta-di_h264/*~Signature=AWDec-E33A5I0q5BAkjtpoWZAc3Q-FATmuUsUpdvv4lNmF0173baG0GBcBB8bnvSdOZLu8nInK3dQIIyWkb-xxm069QH";
+
+
+  /* =====================================================
+     DOM
+     ===================================================== */
+
+  const video =
+    document.getElementById("video");
+
+  const playBtn =
+    document.getElementById("playBtn");
+
+  const muteBtn =
+    document.getElementById("muteBtn");
+
+  const fullscreenBtn =
+    document.getElementById("fullscreenBtn");
+
+  const qualityBtn =
+    document.getElementById("qualityBtn");
+
+  const qualityMenu =
+    document.getElementById("qualityMenu");
+
+  const progress =
+    document.getElementById("progress");
+
+  const status =
+    document.getElementById("status");
+
+  const statusText =
+    document.getElementById("statusText");
+
+
+  let hls = null;
+
+
+  /* =====================================================
+     STATUS
+     ===================================================== */
+
+  function setStatus(
+    text,
+    type,
+    duration
+  ){
+
+    statusText.textContent =
+      text;
+
+    status.className =
+      "show " +
+      (type || "live");
+
+    if(duration){
+
+      setTimeout(
+        function(){
+
+          status.className =
+            "";
+
+        },
+        duration
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     PLAY / PAUSE
+     ===================================================== */
+
+  playBtn.addEventListener(
+    "click",
+    function(){
+
+      if(video.paused){
+
+        video.play()
+          .catch(function(){});
+
+      }else{
+
+        video.pause();
+
+      }
+
+    }
+  );
+
+
+  video.addEventListener(
+    "play",
+    function(){
+
+      playBtn.textContent =
+        "❚❚";
+
+    }
+  );
+
+
+  video.addEventListener(
+    "pause",
+    function(){
+
+      playBtn.textContent =
+        "▶";
+
+    }
+  );
+
+
+  /* =====================================================
+     MUTE
+     ===================================================== */
+
+  muteBtn.addEventListener(
+    "click",
+    function(){
+
+      video.muted =
+        !video.muted;
+
+      muteBtn.textContent =
+        video.muted
+          ? "🔇"
+          : "🔊";
+
+    }
+  );
+
+
+  /* =====================================================
+     FULLSCREEN
+     ===================================================== */
+
+  fullscreenBtn.addEventListener(
+    "click",
+    function(){
+
+      const container =
+        document.getElementById(
+          "player-container"
+        );
+
+      if(
+        document.fullscreenElement
+      ){
+
+        document.exitFullscreen();
+
+      }else if(
+        container.requestFullscreen
+      ){
+
+        container.requestFullscreen();
+
+      }else if(
+        video.webkitEnterFullscreen
+      ){
+
+        video.webkitEnterFullscreen();
+
+      }
+
+    }
+  );
+
+
+  /* =====================================================
+     PROGRESS
+     ===================================================== */
+
+  video.addEventListener(
+    "timeupdate",
+    function(){
+
+      if(
+        video.duration &&
+        isFinite(video.duration)
+      ){
+
+        progress.value =
+          (
+            video.currentTime /
+            video.duration
+          ) * 100;
+
+      }
+
+    }
+  );
+
+
+  progress.addEventListener(
+    "input",
+    function(){
+
+      if(
+        video.duration &&
+        isFinite(video.duration)
+      ){
+
+        video.currentTime =
+          (
+            progress.value /
+            100
+          ) *
+          video.duration;
+
+      }
+
+    }
+  );
+
+
+  /* =====================================================
+     QUALITY MENU
+     ===================================================== */
+
+  function buildQualityMenu(){
+
+    qualityMenu.innerHTML = "";
+
+    if(!hls){
+
+      const option =
+        document.createElement(
+          "button"
+        );
+
+      option.className =
+        "quality-option";
+
+      option.textContent =
+        "Auto";
+
+      qualityMenu.appendChild(
+        option
+      );
+
+      return;
+
+    }
+
+
+    const levels =
+      hls.levels || [];
+
+
+    const auto =
+      document.createElement(
+        "button"
+      );
+
+    auto.className =
+      "quality-option";
+
+    auto.textContent =
+      "Auto";
+
+    auto.addEventListener(
+      "click",
+      function(){
+
+        hls.currentLevel =
+          -1;
+
+        qualityMenu.classList
+          .remove("show");
+
+      }
+    );
+
+    qualityMenu.appendChild(
+      auto
+    );
+
+
+    levels
+      .slice()
+      .reverse()
+      .forEach(
+        function(level,index){
+
+          const originalIndex =
+            levels.length -
+            1 -
+            index;
+
+          const option =
+            document.createElement(
+              "button"
+            );
+
+          option.className =
+            "quality-option";
+
+          option.textContent =
+            level.height
+              ? level.height + "p"
+              : "Quality " +
+                (originalIndex + 1);
+
+
+          option.addEventListener(
+            "click",
+            function(){
+
+              hls.currentLevel =
+                originalIndex;
+
+              qualityMenu.classList
+                .remove("show");
+
+            }
+          );
+
+
+          qualityMenu.appendChild(
+            option
+          );
+
+        }
+      );
+
+  }
+
+
+  qualityBtn.addEventListener(
+    "click",
+    function(e){
+
+      e.stopPropagation();
+
+      buildQualityMenu();
+
+      qualityMenu.classList.toggle(
+        "show"
+      );
+
+    }
+  );
+
+
+  document.addEventListener(
+    "click",
+    function(){
+
+      qualityMenu.classList
+        .remove("show");
+
+    }
+  );
+
+
+  /* =====================================================
+     HLS ERROR RECOVERY
+     ===================================================== */
+
+  function setupHls(){
+
+    if(!Hls.isSupported()){
+
+      setStatus(
+        "HLS not supported",
+        "err",
+        0
+      );
+
+      return;
+
+    }
+
+
+    hls =
+      new Hls({
+
+        enableWorker:true,
+
+        lowLatencyMode:true,
+
+        liveSyncDurationCount:3,
+
+        liveMaxLatencyDurationCount:6,
+
+        maxBufferLength:10,
+
+        backBufferLength:30,
+
+        manifestLoadingMaxRetry:3,
+
+        levelLoadingMaxRetry:3,
+
+        fragLoadingMaxRetry:3
+
+      });
+
+
+    hls.loadSource(
+      STREAM_URL
+    );
+
+
+    hls.attachMedia(
+      video
+    );
+
+
+    /* =================================================
+       MANIFEST
+       ================================================= */
+
+    hls.on(
+      Hls.Events.MANIFEST_PARSED,
+      function(){
+
+        setStatus(
+          "Live",
+          "live",
+          4000
+        );
+
+
+        buildQualityMenu();
+
+
+        video.play()
+          .catch(
+            function(){
+
+              setStatus(
+                "Tap Play",
+                "warn",
+                4000
+              );
+
+            }
+          );
+
+      }
+    );
+
+
+    /* =================================================
+       LEVEL SWITCH
+       ================================================= */
+
+    hls.on(
+      Hls.Events.LEVEL_SWITCHED,
+      function(){
+
+        buildQualityMenu();
+
+      }
+    );
+
+
+    /* =================================================
+       ERROR
+       ================================================= */
+
+    hls.on(
+      Hls.Events.ERROR,
+      function(
+        event,
+        data
+      ){
+
+        console.error(
+          "HLS error:",
+          data
+        );
+
+
+        if(
+          !data.fatal
+        ){
+          return;
+        }
+
+
+        if(
+          data.type ===
+          Hls.ErrorTypes.NETWORK_ERROR
+        ){
+
+          setStatus(
+            "Reconnecting…",
+            "warn",
+            0
+          );
+
+
+          hls.startLoad();
+
+        }
+        else if(
+          data.type ===
+          Hls.ErrorTypes.MEDIA_ERROR
+        ){
+
+          setStatus(
+            "Recovering…",
+            "warn",
+            0
+          );
+
+
+          hls.recoverMediaError();
+
+        }
+        else{
+
+          setStatus(
+            "Stream unavailable",
+            "err",
+            0
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =====================================================
+     NATIVE HLS FALLBACK
+     ===================================================== */
+
+  function setupNativeHls(){
+
+    if(
+      video.canPlayType(
+        "application/vnd.apple.mpegurl"
+      )
+    ){
+
+      video.src =
+        STREAM_URL;
+
+
+      video.addEventListener(
+        "loadedmetadata",
+        function(){
+
+          setStatus(
+            "Live",
+            "live",
+            4000
+          );
+
+
+          video.play()
+            .catch(
+              function(){}
+            );
+
+        },
+        {
+          once:true
+        }
+      );
+
+    }
+    else{
+
+      setStatus(
+        "HLS not supported",
+        "err",
+        0
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     START
+     ===================================================== */
+
+  if(
+    Hls.isSupported()
+  ){
+
+    setupHls();
+
+  }else{
+
+    setupNativeHls();
+
+  }
+
+
+  /* =====================================================
+     USER INTERACTION = UNMUTE
+     ===================================================== */
+
+  function unmute(){
+
+    video.muted =
+      false;
+
+    muteBtn.textContent =
+      "🔊";
+
+  }
+
+
+  video.addEventListener(
+    "play",
+    function(){
+
+      playBtn.textContent =
+        "❚❚";
+
+    }
+  );
+
+
+  document
+    .getElementById(
+      "player-container"
+    )
+    .addEventListener(
+      "pointerdown",
+      unmute,
+      {
+        once:true
+      }
+    );
+
+
+})();
+</script>
+
+</body>
+</html>
