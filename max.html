@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="referrer" content="no-referrer">
+  <title>CrickCast Live - Hindi</title>
+
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .player-wrapper {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      overflow: hidden;
+    }
+
+    #hindiPlayer,
+    .plyr,
+    .plyr__video-wrapper {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      background: #000;
+    }
+
+    #hindiPlayer {
+      object-fit: contain;
+    }
+
+    .plyr--video {
+      background: #000;
+    }
+
+    /* Red premium controls */
+    .plyr__progress__buffer,
+    .plyr__progress__buffer::-webkit-progress-bar {
+      background: rgba(255,255,255,.15) !important;
+    }
+
+    .plyr__progress__played,
+    .plyr__progress__played::-webkit-progress-value {
+      background: #e50914 !important;
+      background-image: linear-gradient(135deg,#ff1a1a,#cc0000) !important;
+      box-shadow: 0 0 12px #e50914aa, 0 0 4px #ff4d4d80 !important;
+    }
+
+    .plyr__progress__thumb {
+      background: #e50914 !important;
+      box-shadow: 0 0 16px #e50914, 0 0 6px #ff6666 !important;
+      border: 2px solid #fff !important;
+    }
+
+    .plyr__volume input[type="range"]::-webkit-slider-thumb {
+      background: #e50914 !important;
+      box-shadow: 0 0 8px #e50914 !important;
+    }
+
+    .plyr__control:hover,
+    .plyr__control[aria-pressed="true"] {
+      background: #e50914 !important;
+    }
+
+    /* CrickCast watermark */
+    #crickcast-watermark {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 99999;
+
+      padding: 7px 12px;
+      border-radius: 999px;
+
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(0,229,255,.3);
+
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+
+      pointer-events: none;
+      user-select: none;
+    }
+
+    #crickcast-watermark b {
+      color: #00e5ff;
+    }
+
+    @media (max-width: 700px) {
+      #crickcast-watermark {
+        top: 10px;
+        left: 10px;
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="player-wrapper">
+    <video
+      id="hindiPlayer"
+      playsinline
+      autoplay
+      crossorigin>
+    </video>
+  </div>
+
+  <div id="crickcast-watermark">
+    Crickcast <b>LIVE</b>
+  </div>
+
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@0.14.17/dist/hls.min.js"></script>
+
+  <script>
+    (function () {
+      const video = document.getElementById('hindiPlayer');
+
+      const streamUrl =
+        'https://in-mc-flive.fancode.com/mumbai/4248491_hindi_hls_ed24a8186993836_1ta-di_h264/1080p.m3u8?hdntl=Expires=1789392659~_GO=Generated~acl=/mumbai/4248491_hindi_hls_ed24a8186993836_1ta-di_h264/*~Signature=AWDec-HByQhk68qSCnCZyABpf45aQQnnay5WKHnruoErrGrN-vafHAIvAttH8kmxylYL3z2vHk2KCGSXRBizd32DMxwF';
+
+      let hls = null;
+
+      if (Hls.isSupported()) {
+        hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true
+        });
+
+        hls.loadSource(streamUrl);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          video.play().catch(function () {});
+        });
+
+        hls.on(Hls.Events.ERROR, function (event, data) {
+          if (data.fatal) {
+            console.error('HLS error:', data);
+          }
+        });
+      }
+      else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = streamUrl;
+
+        video.addEventListener('loadedmetadata', function () {
+          video.play().catch(function () {});
+        }, { once: true });
+      }
+
+      const player = new Plyr(video, {
+        controls: [
+          'play-large',
+          'play',
+          'progress',
+          'current-time',
+          'duration',
+          'mute',
+          'volume',
+          'settings',
+          'fullscreen'
+        ],
+
+        quality: {
+          default: 0,
+          options: [1080, 720, 540, 480, 360, 240],
+          forced: false
+        },
+
+        tooltips: {
+          controls: false,
+          seek: false
+        },
+
+        keyboard: {
+          focused: true,
+          global: true
+        },
+
+        autoplay: true,
+        hideControls: false,
+        resetOnEnd: false,
+        fullscreen: {
+          enabled: true,
+          fallback: true
+        },
+        storage: {
+          enabled: false
+        }
+      });
+
+      const container = player.elements.container;
+
+      if (container) {
+        container.style.width = '100%';
+        container.style.height = '100%';
+      }
+
+      window.addEventListener('resize', function () {
+        if (player.elements.container) {
+          player.elements.container.style.width = '100%';
+          player.elements.container.style.height = '100%';
+        }
+      });
+
+      window.player = player;
+      window.hlsInstance = hls;
+    })();
+  </script>
+
+</body>
+</html>
