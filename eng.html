@@ -5,8 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FIFA WORLD CUP 2026</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css" crossorigin="anonymous">
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"
+    crossorigin="anonymous">
+  </script>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css"
+    crossorigin="anonymous">
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FMP9REY96D"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-FMP9REY96D');
+  </script>
 
   <style>
     * {
@@ -45,20 +62,29 @@
       opacity: 0 !important;
     }
 
-    /* CRICKCAST WATERMARK */
+    /* Crickcast LIVE Watermark */
     #watermark {
       position: fixed;
       top: 12px;
       left: 12px;
       z-index: 99999;
+
       padding: 7px 12px;
       border-radius: 999px;
-      background: rgba(0, 0, 0, .55);
-      border: 1px solid rgba(0, 229, 255, .3);
+
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
+
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 15px;
       font-weight: 700;
+      line-height: 1;
+
       color: #fff;
+
       pointer-events: none;
       user-select: none;
     }
@@ -81,15 +107,24 @@
 <body>
 
   <div class="shaka-video-container" data-shaka-player>
-    <video autoplay muted playsinline preload="metadata"
+
+    <video
+      autoplay
+      playsinline
+      preload="metadata"
       poster="https://w0.peakpx.com/wallpaper/183/933/HD-wallpaper-fifa-world-cup-26-u-sports-soccer-mexico-canada-football-fifa-world-cup-world-cup-2026-we-are-26-sport-event-international-competition-global-event-tournament.jpg">
     </video>
+
   </div>
 
-  <div id="watermark">Crickcast <b>LIVE</b></div>
+  <!-- Crickcast LIVE Watermark -->
+  <div id="watermark">
+    Crickcast <b>LIVE</b>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+
       shaka.polyfill.installAll();
 
       if (!shaka.Player.isBrowserSupported()) {
@@ -99,10 +134,16 @@
 
       const video = document.querySelector('video');
       const player = new shaka.Player();
+
       await player.attach(video);
 
       const container = document.querySelector('.shaka-video-container');
-      const ui = new shaka.ui.Overlay(player, container, video);
+
+      const ui = new shaka.ui.Overlay(
+        player,
+        container,
+        video
+      );
 
       ui.configure({
         controlPanelElements: [
@@ -117,10 +158,12 @@
           'quality',
           'fullscreen'
         ],
+
         volumeBarColors: {
           base: 'rgba(0, 136, 255, 0.3)',
           level: 'rgb(0, 136, 255)'
         },
+
         seekBarColors: {
           base: 'rgba(90, 0, 0, 0.3)',
           buffered: 'rgba(120, 0, 0, 0.6)',
@@ -128,17 +171,18 @@
         }
       });
 
-      const drmConfig = {
+      let drmConfig = {
         clearKeys: {
-          "881660f21b521a54803840a388caaffa":
-          "b152a33ccb29c23fc05f8e6379f69551"
+          "8e802e5373c59195ff0a9838814db6f4":
+          "d76ecf4be947c06874c1b57427f9e85b"
         }
       };
 
-      const streamUrl =
-        "https://a96aivottlinear-a.akamaihd.net/OTTB/iad-nitro/live/clients/dash/enc/rg1wbyohtc/out/v1/e3fc25fcd54141b0a1aa39c1b04c0d7b/cenc.mpd";
+      let streamUrl =
+        "https://a96aivottlinear-a.akamaihd.net/OTTB/pdx-nitro/live/clients/dash/enc/r5nicrqiyf/out/v1/6659e5152b4e4bb89917f57640f594fb/cenc.mpd";
 
       player.configure({
+
         drm: drmConfig,
 
         streaming: {
@@ -168,16 +212,29 @@
       });
 
       player.addEventListener('error', (event) => {
-        console.error('Shaka Player Error:', event.detail);
+        console.error(
+          'Shaka Player Error:',
+          event.detail
+        );
       });
 
       try {
+
         await player.load(streamUrl);
-        console.log('Stream loaded successfully');
-        video.play().catch(() => {});
+
+        console.log(
+          "Stream loaded successfully"
+        );
+
       } catch (error) {
-        console.error('Load error:', error);
+
+        console.error(
+          'Load error:',
+          error
+        );
+
       }
+
     });
   </script>
 
