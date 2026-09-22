@@ -1,3 +1,4 @@
+# Temporary one-time migration workflow
 name: Apply Adsterra Popunder
 
 on:
