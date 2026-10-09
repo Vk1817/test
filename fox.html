@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Fox Cricket</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <meta name="referrer" content="no-referrer"/>
+
+  <!-- Adsterra Popunder -->
+  <script src="https://pl31453790.profitableratecpmnetwork.com/99/94/3d/99943d2b6c5f2e859ee8a98ed60253f2.js"></script>
+
+  <!-- Plyr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css"/>
+
+  <!-- HLS.js -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <!-- Plyr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
+
+  <style>
+    body {
+      background-color: #000;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .plyr {
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="video-container">
+    <video autoplay playsinline muted id="player" controls preload="metadata"></video>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const video = document.getElementById("player");
+      const source = "https://papacito.cfd/m3u/441307/live.m3u8";
+
+      const defaultOptions = {
+        autoplay: true,
+        controls: [
+          'play', 'rewind', 'fast-forward', 'progress', 'current-time',
+          'mute', 'volume', 'settings', 'fullscreen'
+        ],
+        settings: ['quality']
+      };
+
+      let player;
+
+      function setupPlayer(hls, qualities = []) {
+        player = new Plyr(video, {
+          ...defaultOptions,
+          quality: qualities.length ? {
+            default: qualities[0],
+            options: qualities,
+            forced: true,
+            onChange: q => {
+              if (hls) {
+                hls.levels.forEach((level, index) => {
+                  if (level.height === q) {
+                    hls.currentLevel = index;
+                  }
+                });
+              }
+            }
+          } : {}
+        });
+
+        // Auto resume
+        setInterval(() => {
+          if (video.paused && video.readyState > 2) {
+            video.play().catch(() => {});
+          }
+        }, 3000);
+
+        // Unmute on first interaction
+        const unmute = () => {
+          video.muted = false;
+          video.volume = 1;
+          document.removeEventListener("click", unmute);
+          document.removeEventListener("touchstart", unmute);
+        };
+
+        document.addEventListener("click", unmute);
+        document.addEventListener("touchstart", unmute);
+      }
+
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          autoStartLoad: true
+        });
+
+        hls.loadSource(source);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+          const availableQualities = [
+            ...new Set(data.levels.map(l => l.height))
+          ].sort((a, b) => b - a);
+
+          video.play().catch(() => {});
+          setupPlayer(hls, availableQualities);
+        });
+
+        // Auto recover on fatal errors
+        hls.on(Hls.Events.ERROR, function (_, data) {
+          if (data.fatal) {
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              hls.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            } else {
+              hls.destroy();
+            }
+          }
+        });
+
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = source;
+
+        video.addEventListener("loadedmetadata", () => {
+          video.play().catch(() => {});
+          setupPlayer(null);
+        });
+      }
+    });
+  </script>
+
+  <!-- Adsterra Social Bar -->
+  <script src="https://pl31462793.profitableratecpmnetwork.com/d6/4b/36/d64b36bf477d6826fb50d6452488a0a6.js"></script>
+
+</body>
+</html>
