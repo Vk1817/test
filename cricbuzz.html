@@ -1,10 +1,14 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <title>Fox Cricket</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
   <meta name="referrer" content="no-referrer"/>
-  
+
+  <!-- Adsterra Popunder -->
+  <script src="https://pl31453790.profitableratecpmnetwork.com/99/94/3d/99943d2b6c5f2e859ee8a98ed60253f2.js"></script>
+
   <!-- Plyr CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css"/>
 
@@ -21,10 +25,12 @@
       padding: 0;
       overflow: hidden;
     }
+
     html, body {
       height: 100%;
       width: 100%;
     }
+
     .video-container {
       position: relative;
       width: 100%;
@@ -34,18 +40,21 @@
       align-items: center;
       justify-content: center;
     }
+
     video {
       width: 100%;
       height: 100%;
       object-fit: contain;
       background: #000;
     }
+
     .plyr {
       height: 100%;
       width: 100%;
     }
   </style>
 </head>
+
 <body>
   <div class="video-container">
     <video autoplay playsinline muted id="player" controls preload="metadata"></video>
@@ -75,23 +84,25 @@
             options: qualities,
             forced: true,
             onChange: q => {
-              hls.levels.forEach((level, index) => {
-                if (level.height === q) {
-                  hls.currentLevel = index;
-                }
-              });
+              if (hls) {
+                hls.levels.forEach((level, index) => {
+                  if (level.height === q) {
+                    hls.currentLevel = index;
+                  }
+                });
+              }
             }
           } : {}
         });
 
-        // 🔁 AUTO RESUME
+        // Auto resume
         setInterval(() => {
           if (video.paused && video.readyState > 2) {
-            video.play().catch(()=>{});
+            video.play().catch(() => {});
           }
         }, 3000);
 
-        // 🔊 AUTO UNMUTE (on first interaction)
+        // Unmute on first interaction
         const unmute = () => {
           video.muted = false;
           video.volume = 1;
@@ -112,27 +123,40 @@
         hls.attachMedia(video);
 
         hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-          const availableQualities = data.levels.map(l => l.height).sort((a,b) => b - a);
-          video.play().catch(()=>{});
+          const availableQualities = [
+            ...new Set(data.levels.map(l => l.height))
+          ].sort((a, b) => b - a);
+
+          video.play().catch(() => {});
           setupPlayer(hls, availableQualities);
         });
 
-        // 🔥 AUTO RECOVER ON ERROR
+        // Auto recover on fatal errors
         hls.on(Hls.Events.ERROR, function (_, data) {
           if (data.fatal) {
-            hls.startLoad();
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+              hls.startLoad();
+            } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              hls.recoverMediaError();
+            } else {
+              hls.destroy();
+            }
           }
         });
 
       } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = source;
+
         video.addEventListener("loadedmetadata", () => {
-          video.play().catch(()=>{});
+          video.play().catch(() => {});
           setupPlayer(null);
         });
       }
     });
   </script>
-  <script>(function(s){s.dataset.zone='11514537',s.src='https://llvpn.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+  <!-- Adsterra Social Bar -->
+  <script src="https://pl31462793.profitableratecpmnetwork.com/d6/4b/36/d64b36bf477d6826fb50d6452488a0a6.js"></script>
+
 </body>
 </html>
