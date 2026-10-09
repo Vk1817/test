@@ -1,199 +1,138 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FIFA WORLD CUP 2026 | Crickcast LIVE</title>
-
-  <!-- Adsterra Popunder (unchanged) -->
-  <script src="https://pl31453790.profitableratecpmnetwork.com/99/94/3d/99943d2b6c5f2e859ee8a98ed60253f2.js"></script>
+  <title>Fox Cricket</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+  <meta name="referrer" content="no-referrer"/>
+  
+  <!-- Plyr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.css"/>
 
   <!-- HLS.js -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.6.13/dist/hls.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <!-- Plyr JS -->
+  <script src="https://cdn.jsdelivr.net/npm/plyr@3.7.8/dist/plyr.polyfilled.js"></script>
 
   <style>
-    * {
+    body {
+      background-color: #000;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    html, body {
-      width: 100%;
-      height: 100%;
       overflow: hidden;
-      background: #000;
-      font-family: system-ui, -apple-system, sans-serif;
     }
-
-    .player-container {
-      position: fixed;
-      inset: 0;
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+    .video-container {
+      position: relative;
       width: 100%;
       height: 100%;
       background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-
     video {
-      display: block;
       width: 100%;
       height: 100%;
       object-fit: contain;
       background: #000;
     }
-
-    #watermark {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      z-index: 99999;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(0, 229, 255, 0.3);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    #watermark b {
-      color: #00e5ff;
-    }
-
-    #status {
-      position: fixed;
-      left: 50%;
-      bottom: 65px;
-      transform: translateX(-50%);
-      z-index: 10;
-      max-width: 90%;
-      color: #fff;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    #status:empty {
-      display: none;
-    }
-
-    @media (max-width: 700px) {
-      #watermark {
-        top: 10px;
-        left: 10px;
-        padding: 6px 10px;
-        font-size: 13px;
-      }
+    .plyr {
+      height: 100%;
+      width: 100%;
     }
   </style>
 </head>
-
 <body>
-  <div class="player-container">
-    <video
-      id="video"
-      controls
-      autoplay
-      muted
-      playsinline
-      preload="auto">
-    </video>
+  <div class="video-container">
+    <video autoplay playsinline muted id="player" controls preload="metadata"></video>
   </div>
-
-  <!-- Crickcast LIVE Watermark -->
-  <div id="watermark">Crickcast <b>LIVE</b></div>
-
-  <div id="status">Connecting to stream...</div>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      const video = document.getElementById("video");
-      const status = document.getElementById("status");
+      const video = document.getElementById("player");
+      const source = "https://papacito.cfd/m3u/2161753/live.m3u8";
 
-      const streamUrl =
-        "https://papacito.cfd/m3u/2161753/live.m3u8";
+      const defaultOptions = {
+        autoplay: true,
+        controls: [
+          'play', 'rewind', 'fast-forward', 'progress', 'current-time',
+          'mute', 'volume', 'settings', 'fullscreen'
+        ],
+        settings: ['quality']
+      };
 
-      function showStatus(message) {
-        status.textContent = message;
-      }
+      let player;
 
-      function clearStatus() {
-        status.textContent = "";
-      }
-
-      video.addEventListener("playing", clearStatus);
-
-      video.addEventListener("waiting", function () {
-        showStatus("Buffering stream...");
-      });
-
-      video.addEventListener("error", function () {
-        showStatus("Playback failed. Check stream availability or browser console.");
-      });
-
-      if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        // Native HLS support (commonly Safari)
-        video.src = streamUrl;
-
-        video.play().catch(function () {
-          showStatus("Press Play to start the stream.");
+      function setupPlayer(hls, qualities = []) {
+        player = new Plyr(video, {
+          ...defaultOptions,
+          quality: qualities.length ? {
+            default: qualities[0],
+            options: qualities,
+            forced: true,
+            onChange: q => {
+              hls.levels.forEach((level, index) => {
+                if (level.height === q) {
+                  hls.currentLevel = index;
+                }
+              });
+            }
+          } : {}
         });
-      } else if (Hls.isSupported()) {
-        // HLS playback via Media Source Extensions
+
+        // 🔁 AUTO RESUME
+        setInterval(() => {
+          if (video.paused && video.readyState > 2) {
+            video.play().catch(()=>{});
+          }
+        }, 3000);
+
+        // 🔊 AUTO UNMUTE (on first interaction)
+        const unmute = () => {
+          video.muted = false;
+          video.volume = 1;
+          document.removeEventListener("click", unmute);
+          document.removeEventListener("touchstart", unmute);
+        };
+
+        document.addEventListener("click", unmute);
+        document.addEventListener("touchstart", unmute);
+      }
+
+      if (Hls.isSupported()) {
         const hls = new Hls({
-          enableWorker: true,
-          lowLatencyMode: true,
-          backBufferLength: 30,
-          manifestLoadingTimeOut: 15000,
-          manifestLoadingMaxRetry: 3,
-          levelLoadingMaxRetry: 3,
-          fragLoadingMaxRetry: 3
+          autoStartLoad: true
         });
 
-        hls.loadSource(streamUrl);
+        hls.loadSource(source);
         hls.attachMedia(video);
 
-        hls.on(Hls.Events.MANIFEST_PARSED, function () {
-          showStatus("Stream ready. Starting playback...");
-
-          video.play().then(function () {
-            clearStatus();
-          }).catch(function () {
-            showStatus("Stream ready. Press Play to start.");
-          });
+        hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+          const availableQualities = data.levels.map(l => l.height).sort((a,b) => b - a);
+          video.play().catch(()=>{});
+          setupPlayer(hls, availableQualities);
         });
 
-        hls.on(Hls.Events.ERROR, function (event, data) {
-          if (!data.fatal) return;
-
-          console.error("HLS playback error:", data);
-
-          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-            showStatus("Network error. The stream may be unavailable or blocked.");
+        // 🔥 AUTO RECOVER ON ERROR
+        hls.on(Hls.Events.ERROR, function (_, data) {
+          if (data.fatal) {
             hls.startLoad();
-          } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-            showStatus("Recovering media playback...");
-            hls.recoverMediaError();
-          } else {
-            showStatus("Unable to play this stream. Check the stream URL and browser console.");
-            hls.destroy();
           }
         });
-      } else {
-        showStatus("This browser does not support HLS playback.");
+
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = source;
+        video.addEventListener("loadedmetadata", () => {
+          video.play().catch(()=>{});
+          setupPlayer(null);
+        });
       }
     });
   </script>
-
-  <!-- Adsterra Social Bar (unchanged) -->
-  <script src="https://pl31462793.profitableratecpmnetwork.com/d6/4b/36/d64b36bf477d6826fb50d6452488a0a6.js"></script>
+  <script>(function(s){s.dataset.zone='11514537',s.src='https://llvpn.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
 </body>
 </html>
