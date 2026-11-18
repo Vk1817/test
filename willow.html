@@ -1,27 +1,25 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FIFA WORLD CUP 2026</title>
+  <meta name="theme-color" content="#000000">
+  <title>FIFA WORLD CUP 2026 | CRICKCAST LIVE</title>
 
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"
-    crossorigin="anonymous">
-  </script>
-
-  <link
-    rel="stylesheet"
+  <!-- Shaka Player -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/shaka-player.ui.min.js"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.7.11/controls.min.css"
     crossorigin="anonymous">
 
-  <!-- Google tag (gtag.js) -->
+  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-FMP9REY96D"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-FMP9REY96D');
   </script>
 
@@ -34,8 +32,8 @@
 
     html, body {
       background: #000;
-      height: 100vh;
-      width: 100vw;
+      width: 100%;
+      height: 100%;
       overflow: hidden;
       font-family: system-ui, -apple-system, sans-serif;
     }
@@ -45,6 +43,7 @@
       inset: 0;
       width: 100%;
       height: 100%;
+      background: #000;
     }
 
     video {
@@ -62,35 +61,45 @@
       opacity: 0 !important;
     }
 
-    /* Crickcast LIVE Watermark */
+    /* CRICKCAST watermark */
     #watermark {
       position: fixed;
       top: 12px;
       left: 12px;
       z-index: 99999;
-
       padding: 7px 12px;
       border-radius: 999px;
-
       background: rgba(0, 0, 0, 0.55);
       border: 1px solid rgba(0, 229, 255, 0.3);
-
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
-
       font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       font-size: 15px;
       font-weight: 700;
       line-height: 1;
-
       color: #fff;
-
       pointer-events: none;
       user-select: none;
     }
 
     #watermark b {
       color: #00e5ff;
+    }
+
+    #error-message {
+      position: fixed;
+      bottom: 65px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99999;
+      width: min(90%, 600px);
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: rgba(120, 0, 0, 0.85);
+      color: white;
+      font-size: 13px;
+      text-align: center;
+      display: none;
     }
 
     @media (max-width: 700px) {
@@ -102,143 +111,176 @@
       }
     }
   </style>
-<!-- Adsterra Popunder -->
+
+  <!-- Adsterra Popunder -->
   <script src="https://pl31453790.profitableratecpmnetwork.com/99/94/3d/99943d2b6c5f2e859ee8a98ed60253f2.js"></script>
 </head>
 
 <body>
 
   <div class="shaka-video-container" data-shaka-player>
-
     <video
       autoplay
       playsinline
       preload="metadata"
       poster="https://w0.peakpx.com/wallpaper/183/933/HD-wallpaper-fifa-world-cup-26-u-sports-soccer-mexico-canada-football-fifa-world-cup-world-cup-2026-we-are-26-sport-event-international-competition-global-event-tournament.jpg">
     </video>
-
   </div>
 
-  <!-- Crickcast LIVE Watermark -->
   <div id="watermark">
     Crickcast <b>LIVE</b>
   </div>
 
+  <div id="error-message"></div>
+
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      const errorBox = document.getElementById('error-message');
 
-      shaka.polyfill.installAll();
-
-      if (!shaka.Player.isBrowserSupported()) {
-        console.error('Browser not supported');
-        return;
+      function showError(message) {
+        errorBox.textContent = message;
+        errorBox.style.display = 'block';
       }
 
-      const video = document.querySelector('video');
-      const player = new shaka.Player();
-
-      await player.attach(video);
-
-      const container = document.querySelector('.shaka-video-container');
-
-      const ui = new shaka.ui.Overlay(
-        player,
-        container,
-        video
-      );
-
-      ui.configure({
-        controlPanelElements: [
-          'play_pause',
-          'time_and_duration',
-          'mute',
-          'volume',
-          'spacer',
-          'language',
-          'captions',
-          'picture_in_picture',
-          'quality',
-          'fullscreen'
-        ],
-
-        volumeBarColors: {
-          base: 'rgba(0, 136, 255, 0.3)',
-          level: 'rgb(0, 136, 255)'
-        },
-
-        seekBarColors: {
-          base: 'rgba(90, 0, 0, 0.3)',
-          buffered: 'rgba(120, 0, 0, 0.6)',
-          played: 'rgb(170, 0, 0)'
-        }
-      });
-
-      let drmConfig = {
-        clearKeys: {
-          "ec7e146b29b33caca854620c0fb05bea:e895d427078bb109a0f6b8fd690dd105" 
-        }
-      };
-
-      let streamUrl = "https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/cs4bb976aa/out/v1/18bfdac2326c4055b5be76a41172ff9c/cenc.mpd";  
-
-      player.configure({
-
-        drm: drmConfig,
-
-        streaming: {
-          lowLatencyMode: true,
-          bufferingGoal: 15,
-          rebufferingGoal: 2,
-          bufferBehind: 15,
-
-          retryParameters: {
-            timeout: 10000,
-            maxAttempts: 5,
-            baseDelay: 300,
-            backoffFactor: 1.2
-          },
-
-          segmentRequestTimeout: 8000,
-          segmentPrefetchLimit: 2,
-          useNativeHlsOnSafari: true
-        },
-
-        manifest: {
-          retryParameters: {
-            timeout: 8000,
-            maxAttempts: 3
-          }
-        }
-      });
-
-      player.addEventListener('error', (event) => {
-        console.error(
-          'Shaka Player Error:',
-          event.detail
-        );
-      });
+      function hideError() {
+        errorBox.style.display = 'none';
+      }
 
       try {
+        // Install browser polyfills
+        shaka.polyfill.installAll();
 
-        await player.load(streamUrl);
+        if (!shaka.Player.isBrowserSupported()) {
+          showError('Your browser does not support Shaka Player.');
+          return;
+        }
 
-        console.log(
-          "Stream loaded successfully"
+        const video = document.querySelector('video');
+        const container = document.querySelector('.shaka-video-container');
+
+        const player = new shaka.Player();
+        await player.attach(video);
+
+        // Shaka UI configuration
+        const ui = new shaka.ui.Overlay(
+          player,
+          container,
+          video
         );
+
+        ui.configure({
+          controlPanelElements: [
+            'play_pause',
+            'time_and_duration',
+            'mute',
+            'volume',
+            'spacer',
+            'language',
+            'captions',
+            'picture_in_picture',
+            'quality',
+            'fullscreen'
+          ],
+
+          volumeBarColors: {
+            base: 'rgba(0, 136, 255, 0.3)',
+            level: 'rgb(0, 136, 255)'
+          },
+
+          seekBarColors: {
+            base: 'rgba(90, 0, 0, 0.3)',
+            buffered: 'rgba(120, 0, 0, 0.6)',
+            played: 'rgb(170, 0, 0)'
+          }
+        });
+
+        /*
+          Add your authorised Clear Key pair here.
+          Keep these values private; do not publish DRM keys in public HTML.
+        */
+        const drmConfig = {
+          clearKeys: {
+            "YOUR_KEY_ID": "YOUR_KEY_VALUE"
+          }
+        };
+
+        const streamUrl =
+          "https://otte.cache.aiv-cdn.net/iad-nitro/live/clients/dash/enc/cs4bb976aa/out/v1/18bfdac2326c4055b5be76a41172ff9c/cenc.mpd";
+
+        // Player configuration
+        player.configure({
+          drm: drmConfig,
+
+          streaming: {
+            lowLatencyMode: true,
+            bufferingGoal: 15,
+            rebufferingGoal: 2,
+            bufferBehind: 15,
+
+            retryParameters: {
+              timeout: 10000,
+              maxAttempts: 5,
+              baseDelay: 300,
+              backoffFactor: 1.2
+            },
+
+            segmentRequestTimeout: 8000,
+            segmentPrefetchLimit: 2
+          },
+
+          manifest: {
+            retryParameters: {
+              timeout: 8000,
+              maxAttempts: 3
+            }
+          }
+        });
+
+        // Player error handling
+        player.addEventListener('error', event => {
+          console.error('Shaka Player Error:', event.detail);
+
+          showError(
+            'Playback error. Check the browser console for details.'
+          );
+        });
+
+        video.addEventListener('playing', hideError);
+
+        video.addEventListener('waiting', () => {
+          showError('Buffering stream...');
+        });
+
+        // Load DASH stream
+        try {
+          hideError();
+
+          await player.load(streamUrl);
+
+          console.log('Stream loaded successfully.');
+
+          video.play().catch(error => {
+            console.warn('Autoplay blocked:', error);
+            showError('Stream loaded. Press the Play button to start.');
+          });
+
+        } catch (error) {
+          console.error('Stream Load Error:', error);
+
+          showError(
+            'Unable to load stream. Check the manifest, network access and DRM configuration.'
+          );
+        }
 
       } catch (error) {
-
-        console.error(
-          'Load error:',
-          error
-        );
-
+        console.error('Player initialization error:', error);
+        showError('Player initialization failed. Check browser compatibility.');
       }
-
     });
   </script>
 
-<!-- Adsterra Social Bar -->
+  <!-- Adsterra Social Bar -->
   <script src="https://pl31462793.profitableratecpmnetwork.com/d6/4b/36/d64b36bf477d6826fb50d6452488a0a6.js"></script>
+
 </body>
 </html>
